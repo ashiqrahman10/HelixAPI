@@ -24,6 +24,7 @@ class User(Base):
     appointments = relationship("Appointment", back_populates="user")
     diagnoses = relationship("Diagnosis", back_populates="doctor")
     prescriptions = relationship("Prescription", back_populates="doctor")
+    chat_messages = relationship("ChatMessage", back_populates="user")
 
 class DoctorProfile(Base):
     __tablename__ = "doctors"
@@ -199,3 +200,15 @@ class Document(Base):
 
     # Relationships
     user = relationship("User")
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    message = Column(Text, nullable=False)
+    response = Column(Text, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+    # Relationship
+    user = relationship("User", back_populates="chat_messages")
