@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import doctor_router, patient_router, lab_router, auth_router, system_router
-from database import init_db
+from .database import init_db
 
 app = FastAPI(title="Helix API", description=" Not just a regular API", version="1.0.0")
 
@@ -31,6 +30,3 @@ async def startup_event():
 async def root():
     return {"message": "Welcome to the Helix API"}
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)

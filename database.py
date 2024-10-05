@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from config import settings
+from .config import settings
 
 SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
 
@@ -19,7 +19,7 @@ def get_db():
 
 
 async def init_db():
-    from models import User, Patient, Doctor, LabTest  # Import your models here
+    from .models import User, DoctorProfile, LabTechnicianProfile, Appointment, Diagnosis, Prescription, Lab, LabEquipment, LabReport, Attendance, NutritionalPlan, Document
     Base.metadata.create_all(bind=engine)
     print("Database tables created.")
 
