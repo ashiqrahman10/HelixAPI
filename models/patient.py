@@ -9,4 +9,3 @@ class Patient(Base):
     name = Column(String, index=True)
     date_of_birth = Column(Date)
     email = Column(String, unique=True, index=True)
-    medical_history = Column(String)

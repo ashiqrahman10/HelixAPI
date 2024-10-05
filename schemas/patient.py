@@ -13,6 +13,13 @@ class PatientCreate(PatientBase):
 class PatientUpdate(PatientBase):
     pass
 
+class PatientOut(PatientBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
 class Patient(PatientBase):
     id: int
 

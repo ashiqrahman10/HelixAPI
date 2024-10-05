@@ -11,6 +11,13 @@ class DoctorCreate(DoctorBase):
 class DoctorUpdate(DoctorBase):
     pass
 
+class DoctorOut(DoctorBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
 class Doctor(DoctorBase):
     id: int
 

@@ -16,3 +16,12 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+async def init_db():
+    from models import User, Patient, Doctor, LabTest  # Import your models here
+    Base.metadata.create_all(bind=engine)
+    print("Database tables created.")
+
+if __name__ == "__main__":
+    init_db()
