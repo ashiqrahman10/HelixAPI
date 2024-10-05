@@ -16,11 +16,11 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
-app.include_router(doctor_router, prefix="/doctors", tags=["Doctors"])
-app.include_router(patient_router, prefix="/patients", tags=["Patients"])
-app.include_router(lab_router, prefix="/labs", tags=["Labs"])
-app.include_router(system_router, prefix="/system", tags=["System"])
+# app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
+# app.include_router(doctor_router, prefix="/doctors", tags=["Doctors"])
+# app.include_router(patient_router, prefix="/patients", tags=["Patients"])
+# app.include_router(lab_router, prefix="/labs", tags=["Labs"])
+# app.include_router(system_router, prefix="/system", tags=["System"])
 
 
 @app.on_event("startup")

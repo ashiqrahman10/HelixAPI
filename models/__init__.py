@@ -25,12 +25,30 @@ class User(Base):
     diagnoses = relationship("Diagnosis", back_populates="doctor")
     prescriptions = relationship("Prescription", back_populates="doctor")
 
+class DoctorProfile(Base):
+    __tablename__ = "doctors"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    specialization = Column(String(100))
+    license_number = Column(String(100), unique=True)
+    years_of_experience = Column(Integer)
+
+class LabTechnicianProfile(Base):
+    __tablename__ = "lab_technicians"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    lab_id = Column(Integer, ForeignKey("labs.id"), nullable=False)
+    years_of_experience = Column(Integer)
+    
+
 class Appointment(Base):
     __tablename__ = "appointments"
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    doctor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=False)
     date = Column(Date, nullable=False)
     time = Column(String(5), nullable=False)  # Store as "HH:MM"
     status = Column(Enum("scheduled", "completed", "cancelled"), default="scheduled")
@@ -40,14 +58,14 @@ class Appointment(Base):
 
     # Relationships
     user = relationship("User", foreign_keys=[user_id], back_populates="appointments")
-    doctor = relationship("User", foreign_keys=[doctor_id])
+    doctor = relationship("DoctorProfile", foreign_keys=[doctor_id])
 
 class Diagnosis(Base):
     __tablename__ = "diagnoses"
 
     id = Column(Integer, primary_key=True, index=True)
     patient_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    doctor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=False)
     diagnosis = Column(Text, nullable=False)
     date = Column(Date, nullable=False)
     notes = Column(Text)
@@ -56,14 +74,14 @@ class Diagnosis(Base):
 
     # Relationships
     patient = relationship("User", foreign_keys=[patient_id])
-    doctor = relationship("User", foreign_keys=[doctor_id], back_populates="diagnoses")
+    doctor = relationship("DoctorProfile", foreign_keys=[doctor_id], back_populates="diagnoses")
 
 class Prescription(Base):
     __tablename__ = "prescriptions"
 
     id = Column(Integer, primary_key=True, index=True)
     patient_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    doctor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=False)
     medication = Column(String(100), nullable=False)
     dosage = Column(String(50), nullable=False)
     frequency = Column(String(50), nullable=False)
@@ -75,12 +93,13 @@ class Prescription(Base):
 
     # Relationships
     patient = relationship("User", foreign_keys=[patient_id])
-    doctor = relationship("User", foreign_keys=[doctor_id], back_populates="prescriptions")
+    doctor = relationship("DoctorProfile", foreign_keys=[doctor_id], back_populates="prescriptions")
 
 class Lab(Base):
     __tablename__ = "labs"
 
     id = Column(Integer, primary_key=True, index=True)
+    lab_technician_id = Column(Integer, ForeignKey("lab_technicians.id"), nullable=False)
     name = Column(String(100), nullable=False)
     address = Column(String(200))
     phone_number = Column(String(20))
@@ -88,6 +107,7 @@ class Lab(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
+    lab_technician = relationship("LabTechnicianProfile", back_populates="lab")
     equipment = relationship("LabEquipment", back_populates="lab")
     reports = relationship("LabReport", back_populates="lab")
 
@@ -115,7 +135,7 @@ class LabReport(Base):
     id = Column(Integer, primary_key=True, index=True)
     lab_id = Column(Integer, ForeignKey("labs.id"), nullable=False)
     patient_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    doctor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=False)
     test_name = Column(String(100), nullable=False)
     test_date = Column(Date, nullable=False)
     result = Column(Text, nullable=False)
@@ -128,7 +148,7 @@ class LabReport(Base):
     # Relationships
     lab = relationship("Lab", back_populates="reports")
     patient = relationship("User", foreign_keys=[patient_id])
-    doctor = relationship("User", foreign_keys=[doctor_id])
+    doctor = relationship("DoctorProfile", foreign_keys=[doctor_id])
 
 class Attendance(Base):
     __tablename__ = "attendance"
