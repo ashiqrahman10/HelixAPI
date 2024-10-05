@@ -13,6 +13,13 @@ class LabTestCreate(LabTestBase):
 class LabTestUpdate(LabTestBase):
     pass
 
+class LabTestOut(LabTestBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
 class LabTest(LabTestBase):
     id: int
 

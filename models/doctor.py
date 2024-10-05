@@ -8,3 +8,4 @@ class Doctor(Base):
     name = Column(String, index=True)
     specialization = Column(String)
     email = Column(String, unique=True, index=True)
+    
