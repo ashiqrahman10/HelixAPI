@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers import doctor_router, patient_router, lab_router, auth_router, system_router
 from database import init_db
 
-app = FastAPI(title="Helix API", description="API for the Helix healthcare system", version="1.0.0")
+app = FastAPI(title="Helix API", description=" Not just a regular API", version="1.0.0")
 
 # Configure CORS
 app.add_middleware(
@@ -21,6 +21,7 @@ app.include_router(doctor_router, prefix="/doctors", tags=["Doctors"])
 app.include_router(patient_router, prefix="/patients", tags=["Patients"])
 app.include_router(lab_router, prefix="/labs", tags=["Labs"])
 app.include_router(system_router, prefix="/system", tags=["System"])
+
 
 @app.on_event("startup")
 async def startup_event():
