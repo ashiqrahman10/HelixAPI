@@ -1,5 +1,5 @@
 import { Context, Next } from "hono";
-import { verify } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { env } from "../lib/env";
 
 export const jwtMiddleware = async (c: Context, next: Next) => {
@@ -10,7 +10,7 @@ export const jwtMiddleware = async (c: Context, next: Next) => {
   
     const token = authHeader.split(' ')[1];
     try {
-      const decoded = verify(token, env.JWT_SECRET!) as { id: number };
+      const decoded = jwt.verify(token, env.JWT_SECRET!) as { id: number };
       c.set('jwtPayload', decoded);
       await next();
     } catch (error) {

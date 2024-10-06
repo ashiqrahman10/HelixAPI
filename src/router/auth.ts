@@ -5,7 +5,7 @@ import { users } from '../lib/schema';
 import bcrypt from 'bcrypt';
 import { userCreateSchema } from '../lib/validation';
 import { jwtMiddleware } from '../middleware/jwt';
-import { sign } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { env } from '../lib/env';
 
 const auth = new Hono();
@@ -47,7 +47,7 @@ auth.post('/signup', async (c) => {
   }).returning();
 
   // Generate JWT
-  const token = sign({ id: newUser.id }, JWT_SECRET);
+  const token = jwt.sign({ id: newUser.id }, JWT_SECRET);
 
   return c.json({ token, user: { ...newUser, hashedPassword: undefined } });
 });
@@ -69,7 +69,7 @@ auth.post('/signin', async (c) => {
   }
 
   // Generate JWT
-  const token = sign({ id: user.id }, JWT_SECRET);
+  const token = jwt.sign({ id: user.id }, JWT_SECRET);
 
   return c.json({ token, user: { ...user, hashedPassword: undefined } });
 });
