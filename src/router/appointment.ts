@@ -13,8 +13,7 @@ appointment.use('*', jwtMiddleware);
 // Schema for creating and updating appointments
 const appointmentSchema = z.object({
   doctorId: z.number(),
-  date: z.string().datetime(),
-  time: z.string(),
+  datetime: z.string().datetime(),
   notes: z.string().optional(),
 });
 
@@ -30,14 +29,13 @@ appointment.post('/', async (c) => {
     return c.json({ error: validationResult.error.errors }, 400);
   }
 
-  const { doctorId, date, time, notes } = validationResult.data;
+  const { doctorId, datetime, notes } = validationResult.data;
 
   const [newAppointment] = await db.insert(appointments)
     .values({
       userId,
       doctorId,
-      date: new Date(date),
-      time,
+      datetime: new Date(datetime),
       notes,
       status: 'scheduled',
     })
@@ -105,13 +103,12 @@ appointment.put('/:id', async (c) => {
     return c.json({ error: validationResult.error.errors }, 400);
   }
 
-  const { doctorId, date, time, notes } = validationResult.data;
+  const { doctorId, datetime, notes } = validationResult.data;
 
   const [updatedAppointment] = await db.update(appointments)
     .set({
       doctorId,
-      date: new Date(date),
-      time,
+      datetime: new Date(datetime),
       notes,
       updatedAt: new Date(),
     })

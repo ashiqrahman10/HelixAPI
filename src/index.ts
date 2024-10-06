@@ -7,6 +7,7 @@ import adminRouter from './router/admin'
 import appointmentRouter from './router/appointment'
 import doctorRouter from './router/doctor'
 import documentRouter from './router/documents'
+import { initScheduledJobs } from './lib/scheduler'
 // Load environment variables from .env file
 
 type Variables = {
@@ -31,6 +32,8 @@ app.route('/document', documentRouter)
 
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000
 console.log(`Server is running on port ${port}`)
+
+initScheduledJobs()
 
 serve({
   fetch: app.fetch,

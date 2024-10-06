@@ -96,7 +96,7 @@ admin.put('/appointments/:id', async (c) => {
     .set({
       userId,
       doctorId,
-      date: new Date(dateTime),
+      datetime: new Date(dateTime),
       status,
       updatedAt: new Date(),
     })
