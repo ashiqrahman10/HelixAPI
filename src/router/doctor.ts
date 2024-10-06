@@ -3,11 +3,16 @@ import { jwtMiddleware } from '../middleware/jwt';
 import { db } from '../lib/db';
 import { appointments, diagnoses, prescriptions, users } from '../lib/schema';
 import { and, eq } from 'drizzle-orm';
+import { getUserAndDoctorProfile } from '../lib/getProfiles';
+import { z } from 'zod';
+import { appointmentStatusSchema, diagnosisSchema, prescriptionSchema } from '../lib/validation';
 
 const doctor = new Hono();
 
 // Apply JWT middleware to all doctor routes
 doctor.use('*', jwtMiddleware);
+
+
 
 // Get doctor's appointments
 doctor.get('/appointments', async (c) => {
@@ -43,7 +48,14 @@ doctor.put('/appointments/:id', async (c) => {
   // @ts-ignore
   const doctorId = c.get('jwtPayload').id;
   const appointmentId = parseInt(c.req.param('id'));
-  const { status } = await c.req.json();
+  const body = await c.req.json();
+
+  const validationResult = appointmentStatusSchema.safeParse(body);
+  if (!validationResult.success) {
+    return c.json({ error: validationResult.error.errors }, 400);
+  }
+
+  const { status } = validationResult.data;
 
   const [updatedAppointment] = await db.update(appointments)
     .set({
@@ -64,7 +76,14 @@ doctor.put('/appointments/:id', async (c) => {
 doctor.post('/diagnoses', async (c) => {
   // @ts-ignore
   const doctorId = c.get('jwtPayload').id;
-  const { patientId, diagnosis, date } = await c.req.json();
+  const body = await c.req.json();
+
+  const validationResult = diagnosisSchema.safeParse(body);
+  if (!validationResult.success) {
+    return c.json({ error: validationResult.error.errors }, 400);
+  }
+
+  const { patientId, diagnosis, date } = validationResult.data;
 
   const [newDiagnosis] = await db.insert(diagnoses)
     .values({
@@ -72,8 +91,6 @@ doctor.post('/diagnoses', async (c) => {
       doctorId,
       diagnosis,
       date: new Date(date),
-      createdAt: new Date(),
-      updatedAt: new Date(),
     })
     .returning();
 
@@ -97,7 +114,14 @@ doctor.get('/diagnoses/:patientId', async (c) => {
 doctor.post('/prescriptions', async (c) => {
   // @ts-ignore
   const doctorId = c.get('jwtPayload').id;
-  const { patientId, medication, dosage, frequency, startDate, endDate } = await c.req.json();
+  const body = await c.req.json();
+
+  const validationResult = prescriptionSchema.safeParse(body);
+  if (!validationResult.success) {
+    return c.json({ error: validationResult.error.errors }, 400);
+  }
+
+  const { patientId, medication, dosage, frequency, startDate, endDate } = validationResult.data;
 
   const [newPrescription] = await db.insert(prescriptions)
     .values({
@@ -108,8 +132,6 @@ doctor.post('/prescriptions', async (c) => {
       frequency,
       startDate: new Date(startDate),
       endDate: new Date(endDate),
-      createdAt: new Date(),
-      updatedAt: new Date(),
     })
     .returning();
 
@@ -126,27 +148,25 @@ doctor.get('/prescriptions/:patientId', async (c) => {
     .from(prescriptions)
     .where(and(eq(prescriptions.patientId, patientId), eq(prescriptions.doctorId, doctorId)));
 
+    if (!patientPrescriptions.length) {
+      return c.json({ error: 'Patient prescriptions not found' }, 404);
+    }
+
   return c.json({ prescriptions: patientPrescriptions });
 });
 
-// Update doctor profile
-doctor.put('/profile', async (c) => {
+// Get doctor profile
+doctor.get('/profile', async (c) => {
   // @ts-ignore
   const doctorId = c.get('jwtPayload').id;
-  const { fullName, dateOfBirth, phoneNumber, address } = await c.req.json();
 
-  const [updatedDoctor] = await db.update(users)
-    .set({
-      fullName,
-      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
-      phoneNumber,
-      address,
-      updatedAt: new Date(),
-    })
-    .where(eq(users.id, doctorId))
-    .returning();
+  const doctorProfile = await getUserAndDoctorProfile(doctorId);
 
-  return c.json({ doctor: { ...updatedDoctor, hashedPassword: undefined } });
+  if (!doctorProfile) {
+    return c.json({ error: 'Doctor profile not found' }, 404);
+  }
+
+  return c.json({ doctor: doctorProfile });
 });
 
 export default doctor;

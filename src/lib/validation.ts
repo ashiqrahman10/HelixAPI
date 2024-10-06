@@ -14,3 +14,29 @@ export const userCreateSchema = z.object({
 });
 
 export type UserCreate = z.infer<typeof userCreateSchema>;
+
+// Zod schemas for input validation
+export const appointmentStatusSchema = z.object({
+    status: z.enum(['scheduled', 'completed', 'cancelled']),
+  });
+  
+export const diagnosisSchema = z.object({
+    patientId: z.number().int().positive(),
+    diagnosis: z.string().min(1),
+    date: z.string().refine((date) => !isNaN(Date.parse(date)), {
+      message: 'Invalid date format',
+    }),
+  });
+  
+export const prescriptionSchema = z.object({
+    patientId: z.number().int().positive(),
+    medication: z.string().min(1),
+    dosage: z.string().min(1),
+    frequency: z.string().min(1),
+    startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+      message: 'Invalid start date format',
+    }),
+    endDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+      message: 'Invalid end date format',
+    }),
+  });

@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { jwtMiddleware } from '../middleware/jwt';
 import { db } from '../lib/db';
-import { users, appointments, diagnoses, prescriptions } from '../lib/schema';
+import { users, appointments, diagnoses, prescriptions, doctorProfiles } from '../lib/schema';
 import { eq } from 'drizzle-orm';
 
 const admin = new Hono();
@@ -203,5 +203,43 @@ admin.delete('/prescriptions/:id', async (c) => {
   await db.delete(prescriptions).where(eq(prescriptions.id, prescriptionId));
   return c.json({ message: 'Prescription deleted successfully' });
 });
+
+// Change user role from patient to doctor and create doctor profile
+admin.post('/change-to-doctor/:id', async (c) => {
+  const userId = parseInt(c.req.param('id'));
+  const { specialization, licenseNumber } = await c.req.json();
+
+  // Validate input
+  if (!specialization || !licenseNumber) {
+    return c.json({ error: 'Specialization and license number are required' }, 400);
+  }
+
+  // Start a transaction
+  const result = await db.transaction(async (tx) => {
+    // Update user role
+    const [updatedUser] = await tx.update(users)
+      .set({ role: 'doctor', updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+
+    if (!updatedUser) {
+      throw new Error('User not found');
+    }
+
+    // Create doctor profile
+    const [newDoctorProfile] = await tx.insert(doctorProfiles)
+      .values({
+        userId,
+        specialization,
+        licenseNumber,
+      })
+      .returning();
+
+    return { user: updatedUser, doctorProfile: newDoctorProfile };
+  });
+
+  return c.json({ message: 'User role changed to doctor and profile created', data: result });
+});
+
 
 export default admin;
