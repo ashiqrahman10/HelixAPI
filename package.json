@@ -12,6 +12,7 @@
     "drizzle-orm": "^0.33.0",
     "hono": "^4.6.3",
     "jsonwebtoken": "^9.0.2",
+    "node-cron": "^3.0.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -19,6 +20,7 @@
     "@types/better-sqlite3": "^7.6.11",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^20.11.17",
+    "@types/node-cron": "^3.0.11",
     "drizzle-kit": "^0.22.8",
     "tsx": "^4.7.1"
   }
