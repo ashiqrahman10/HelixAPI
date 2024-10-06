@@ -1,9 +1,10 @@
-
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import authRouter from './router/auth'
 import patientRouter from './router/patient'
 import adminRouter from './router/admin'
+import file from './router/file';  // Add this line
+
 import appointmentRouter from './router/appointment'
 import doctorRouter from './router/doctor'
 import documentRouter from './router/documents'
@@ -25,6 +26,7 @@ app.get('/', (c) => {
 app.route('/auth', authRouter)
 app.route('/patient', patientRouter)
 app.route('/admin', adminRouter)
+app.route('/file', file);  // Add this line
 app.route('/appointment', appointmentRouter)
 app.route('/doctor', doctorRouter)
 app.route('/document', documentRouter)
