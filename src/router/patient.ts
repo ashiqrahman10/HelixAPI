@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { jwtMiddleware } from '../middleware/jwt';
 import { db } from '../lib/db';
-import { appointments, diagnoses, prescriptions, users } from '../lib/schema';
+import { users, medications } from '../lib/schema';
 import { eq } from 'drizzle-orm';
 
 const patient = new Hono();
