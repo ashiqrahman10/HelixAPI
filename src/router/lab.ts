@@ -1,8 +1,9 @@
 import { Hono } from 'hono';
 import { jwtMiddleware } from '../middleware/jwt';
 import { db } from '../lib/db';
-import { labReports, users } from '../lib/schema';
+import { labReports, labTechnicianProfiles, users } from '../lib/schema';
 import { and, eq } from 'drizzle-orm';
+import { getUserAndLabTechnicianProfile } from '../lib/getProfiles';
 
 const lab = new Hono();
 
@@ -26,8 +27,6 @@ lab.post('/tests', async (c) => {
       referenceRange,
       interpretation,
       notes,
-      createdAt: new Date(),
-      updatedAt: new Date(),
     })
     .returning();
 
@@ -90,41 +89,55 @@ lab.put('/tests/:id', async (c) => {
   return c.json({ labTest: updatedLabTest });
 });
 
-// Delete lab test
-lab.delete('/tests/:id', async (c) => {
+// Get lab technician profile
+lab.get('/profile', async (c) => {
+    // @ts-ignore
+    const userId = c.get('jwtPayload').id;
+  
+    const profile = await getUserAndLabTechnicianProfile(userId);
+  
+    if (!profile) {
+      return c.json({ error: 'Lab technician profile not found' }, 404);
+    }
+  
+    return c.json({ profile });
+  });
+  
+  // Update lab technician profile
+  lab.put('/profile', async (c) => {
+    // @ts-ignore
+    const userId = c.get('jwtPayload').id;
+    const { yearsOfExperience } = await c.req.json();
+  
+    const [updatedProfile] = await db.update(labTechnicianProfiles)
+      .set({
+        yearsOfExperience,
+        // updatedAt: new Date(),
+      })
+      .where(eq(labTechnicianProfiles.userId, userId))
+      .returning();
+  
+    if (!updatedProfile) {
+      return c.json({ error: 'Lab technician profile not found' }, 404);
+    }
+  
+    return c.json({ profile: updatedProfile });
+  });
+
+
+// Get lab technician profile
+lab.get('/profile', async (c) => {
   // @ts-ignore
   const labTechnicianId = c.get('jwtPayload').id;
-  const testId = parseInt(c.req.param('id'));
 
-  const [deletedLabTest] = await db.delete(labReports)
-    .where(and(eq(labReports.id, testId), eq(labReports.labTechnicianId, labTechnicianId)))
-    .returning();
+  const labTechnician = await getUserAndLabTechnicianProfile(labTechnicianId);
 
-  if (!deletedLabTest) {
-    return c.json({ error: 'Lab test not found or not authorized' }, 404);
+  if (!labTechnician) {
+    return c.json({ error: 'Lab technician profile not found' }, 404);
   }
 
-  return c.json({ message: 'Lab test deleted successfully' });
+  return c.json({ labTechnician });
 });
 
-// Update lab technician profile
-lab.put('/profile', async (c) => {
-  // @ts-ignore
-  const labTechnicianId = c.get('jwtPayload').id;
-  const { fullName, dateOfBirth, phoneNumber, address } = await c.req.json();
-
-  const [updatedLabTechnician] = await db.update(users)
-    .set({
-      fullName,
-      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
-      phoneNumber,
-      address,
-      updatedAt: new Date(),
-    })
-    .where(eq(users.id, labTechnicianId))
-    .returning();
-
-  return c.json({ labTechnician: { ...updatedLabTechnician, hashedPassword: undefined } });
-});
 
 export default lab;

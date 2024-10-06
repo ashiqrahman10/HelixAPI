@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { jwtMiddleware } from '../middleware/jwt';
 import { db } from '../lib/db';
-import { appointments, diagnoses, prescriptions, users } from '../lib/schema';
+import { appointments, attendance, diagnoses, prescriptions, users } from '../lib/schema';
 import { and, eq } from 'drizzle-orm';
 import { getUserAndDoctorProfile } from '../lib/getProfiles';
 import { z } from 'zod';
@@ -11,6 +11,55 @@ const doctor = new Hono();
 
 // Apply JWT middleware to all doctor routes
 doctor.use('*', jwtMiddleware);
+
+
+// Mark attendance for a day
+doctor.post('/attendance', async (c) => {
+  // @ts-ignore
+  const doctorId = c.get('jwtPayload').id;
+  const { date } = await c.req.json();
+
+  // Validate the date
+  const attendanceDate = new Date(date);
+  if (isNaN(attendanceDate.getTime())) {
+    return c.json({ error: 'Invalid date format' }, 400);
+  }
+
+  if(attendanceDate < new Date()) {
+    return c.json({ error: 'Cannot mark attendance for past date' }, 400);
+  }
+
+  // Check if attendance already marked for this date
+  const [existingAttendance] = await db.select()
+    .from(attendance)
+    .where(
+      and(
+        eq(attendance.doctorId, doctorId),
+        eq(attendance.date, attendanceDate)
+      )
+    );
+
+  if (existingAttendance) {
+    return c.json({ error: 'Attendance already marked for this date' }, 400);
+  }
+
+  // Mark attendance
+  const [newAttendance] = await db.insert(attendance)
+    .values({
+      doctorId: doctorId,
+      date: attendanceDate,
+      createdAt: new Date(),
+    })
+    .returning();
+
+  return c.json({ 
+    message: 'Attendance marked successfully', 
+    attendance: newAttendance 
+  });
+});
+
+
+
 
 
 
@@ -168,5 +217,6 @@ doctor.get('/profile', async (c) => {
 
   return c.json({ doctor: doctorProfile });
 });
+
 
 export default doctor;

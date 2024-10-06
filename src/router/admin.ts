@@ -96,7 +96,7 @@ admin.put('/appointments/:id', async (c) => {
     .set({
       userId,
       doctorId,
-      date: new Date(dateTime),
+      datetime: new Date(dateTime),
       status,
       updatedAt: new Date(),
     })
@@ -235,7 +235,10 @@ admin.post('/change-to-doctor/:id', async (c) => {
       })
       .returning();
 
-    return { user: updatedUser, doctorProfile: newDoctorProfile };
+    return { user: {
+        ...updatedUser,
+        hashedPassword: undefined
+    }, doctorProfile: newDoctorProfile };
   });
 
   return c.json({ message: 'User role changed to doctor and profile created', data: result });

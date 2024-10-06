@@ -5,6 +5,10 @@ import patientRouter from './router/patient'
 import adminRouter from './router/admin'
 import file from './router/file';  // Add this line
 
+import appointmentRouter from './router/appointment'
+import doctorRouter from './router/doctor'
+import documentRouter from './router/documents'
+import { initScheduledJobs } from './lib/scheduler'
 // Load environment variables from .env file
 
 type Variables = {
@@ -23,9 +27,15 @@ app.route('/auth', authRouter)
 app.route('/patient', patientRouter)
 app.route('/admin', adminRouter)
 app.route('/file', file);  // Add this line
+app.route('/appointment', appointmentRouter)
+app.route('/doctor', doctorRouter)
+app.route('/document', documentRouter)
+
 
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000
 console.log(`Server is running on port ${port}`)
+
+initScheduledJobs()
 
 serve({
   fetch: app.fetch,
