@@ -4,8 +4,9 @@ import { Hono } from 'hono'
 import authRouter from './router/auth'
 import patientRouter from './router/patient'
 import adminRouter from './router/admin'
-
-
+import appointmentRouter from './router/appointment'
+import doctorRouter from './router/doctor'
+import documentRouter from './router/documents'
 // Load environment variables from .env file
 
 type Variables = {
@@ -23,6 +24,9 @@ app.get('/', (c) => {
 app.route('/auth', authRouter)
 app.route('/patient', patientRouter)
 app.route('/admin', adminRouter)
+app.route('/appointment', appointmentRouter)
+app.route('/doctor', doctorRouter)
+app.route('/document', documentRouter)
 
 
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000
