@@ -14,6 +14,10 @@ doctor.use('*', jwtMiddleware);
 
 
 
+
+
+
+
 // Get doctor's appointments
 doctor.get('/appointments', async (c) => {
   // @ts-ignore
@@ -168,5 +172,6 @@ doctor.get('/profile', async (c) => {
 
   return c.json({ doctor: doctorProfile });
 });
+
 
 export default doctor;

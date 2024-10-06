@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { jwtMiddleware } from '../middleware/jwt';
 import { db } from '../lib/db';
-import { labReports, users } from '../lib/schema';
+import { labReports, labTechnicianProfiles, users } from '../lib/schema';
 import { and, eq } from 'drizzle-orm';
 import { getUserAndLabTechnicianProfile } from '../lib/getProfiles';
 
@@ -88,6 +88,41 @@ lab.put('/tests/:id', async (c) => {
 
   return c.json({ labTest: updatedLabTest });
 });
+
+// Get lab technician profile
+lab.get('/profile', async (c) => {
+    // @ts-ignore
+    const userId = c.get('jwtPayload').id;
+  
+    const profile = await getUserAndLabTechnicianProfile(userId);
+  
+    if (!profile) {
+      return c.json({ error: 'Lab technician profile not found' }, 404);
+    }
+  
+    return c.json({ profile });
+  });
+  
+  // Update lab technician profile
+  lab.put('/profile', async (c) => {
+    // @ts-ignore
+    const userId = c.get('jwtPayload').id;
+    const { yearsOfExperience } = await c.req.json();
+  
+    const [updatedProfile] = await db.update(labTechnicianProfiles)
+      .set({
+        yearsOfExperience,
+        // updatedAt: new Date(),
+      })
+      .where(eq(labTechnicianProfiles.userId, userId))
+      .returning();
+  
+    if (!updatedProfile) {
+      return c.json({ error: 'Lab technician profile not found' }, 404);
+    }
+  
+    return c.json({ profile: updatedProfile });
+  });
 
 
 // Get lab technician profile
